@@ -37,6 +37,6 @@ jobs:
         with:
           projectKey: sonarcloudpydemo
           organization: Sonarclouddemo
-          projectName: Sonarclouddemo          
+          projectName: sonarcloud          
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}        
