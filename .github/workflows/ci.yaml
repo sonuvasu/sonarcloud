@@ -35,8 +35,8 @@ jobs:
       - name: SonarQube Scan
         uses: sonarsource/sonarcloud-github-action@master
         with:
-          projectKey: my-python-project
-          organization: trainmefordevsecops
-          projectName: My Python Project          
+          projectKey: sonarcloudpydemo
+          organization: Sonarclouddemo
+          projectName: Sonarclouddemo          
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}        
