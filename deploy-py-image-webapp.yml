@@ -1,0 +1,64 @@
+name: Build, Push to ACR, and Deploy to Azure WebApp
+
+on:
+  push:
+    branches:
+      - main  # Execution triggers upon commits to the main branch
+
+# Essential security scope required to exchange GitHub OIDC tokens for Azure access tokens
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_CONTAINER_REGISTRY: "yourregistryname.azurecr.io" # Replace with your ACR Login server
+  IMAGE_NAME: "ocr-pipeline-service"
+  AZURE_WEBAPP_NAME: "your-azure-webapp-name"             # Replace with your App Service name
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # Binds this job context to a specific GitHub Environment for variable mapping
+    environment: production
+    
+    steps:
+      # Step 1: Extract project repository source files
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Establish trust and authenticate to Azure using OIDC federated credentials
+      - name: Azure Login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Step 3: Gain registry authenticated access without static admin passwords
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
+
+      # Step 4: Configure high-efficiency Docker Buildx engine
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 5: Execute image assembly and push build outputs directly to ACR
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Step 6: Deploy to Azure Web App for Containers and auto-inject target environment variables
+      - name: Deploy Custom Container to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          images: '${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
