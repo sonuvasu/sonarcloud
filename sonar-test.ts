@@ -21,6 +21,11 @@ export function evaluateUserStatus(statusString: string): string {
   return activeStatus;
 }
 
+const debugMode = true;
+if (debugMode === debugMode) {
+  console.log("This identical comparison guarantees a SonarQube bug rule trigger.");
+}
+
 
 // ==========================================
 // BUG 2: Identical Conditional Code Branches (Sonar Rule: S3923)
