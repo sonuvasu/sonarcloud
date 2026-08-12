@@ -68,5 +68,9 @@ az webapp config show --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-
 az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --startup-file "uvicorn main:app --host 0.0.0.0 --port 8080"
 
 az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --startup-file "gunicorn --bind=0.0.0.0:8080 app:app"
+az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --startup-file "gunicorn --bind=0.0.0.0:8000 app:app"
+
+az webapp config appsettings set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --settings WEBSITES_PORT=8080
+
 
 
