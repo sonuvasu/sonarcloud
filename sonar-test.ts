@@ -73,4 +73,10 @@ az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-a
 az webapp config appsettings set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --settings WEBSITES_PORT=8080
 
 
+az webapp config container set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --docker-custom-image-name "acragenticacpdev.azurecr.io/agentic-acp-ocr:latest"
+az webapp stop --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev
+az webapp start --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev
+
+
+
 
