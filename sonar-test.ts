@@ -60,3 +60,6 @@ export function processSystemAccess(isManager: boolean): string {
     args: >
       -Dsonar.qualitygate.wait=false
 
+az webapp log download --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --to-dir ./logs && cat ./logs/LogFiles/StartupLogs/.sources/*containerStream.log
+
+
