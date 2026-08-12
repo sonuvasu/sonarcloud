@@ -63,3 +63,10 @@ export function processSystemAccess(isManager: boolean): string {
 az webapp log download --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --to-dir ./logs && cat ./logs/LogFiles/StartupLogs/.sources/*containerStream.log
 
 
+az webapp config show --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --query "startupFile" --output tsv
+
+az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --startup-file "uvicorn main:app --host 0.0.0.0 --port 8080"
+
+az webapp config set --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev --startup-file "gunicorn --bind=0.0.0.0:8080 app:app"
+
+
