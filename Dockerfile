@@ -94,3 +94,13 @@ EXPOSE 8000
 
 # Set default execution command
 CMD ["python", "app.py"]
+
+
+
+
+RUN curl https://microsoft.com | apt-key add - \
+    && curl https://microsoft.com > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
