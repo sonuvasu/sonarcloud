@@ -117,3 +117,23 @@ RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID 
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2 | cut -d '.' -f 1)/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+    ****************
+# Step 2: Download the Microsoft repository package
+RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2 | cut -d '.' -f 1)/packages-microsoft-prod.deb
+
+# Step 3: Install the repository, update apt, and install the driver
+RUN dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
