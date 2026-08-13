@@ -77,6 +77,17 @@ az webapp config container set --name wa-agentic-acp-ocr-dev --resource-group rg
 az webapp stop --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev
 az webapp start --name wa-agentic-acp-ocr-dev --resource-group rg-agentic-acp-dev
 
+**************************
+def process_system_loop(items):
+    # This loop logic is broken and will never terminate if executed.
+    # SonarQube flags infinite or meaningless conditions as severe bugs.
+    counter = 0
+    while counter < 10:
+        if counter == 5:
+            # 🐛 BUG: Modifying execution variable incorrectly
+            pass 
+        # Missing increment inside specific logic blocks creates a bug trap
+
 
 
 
