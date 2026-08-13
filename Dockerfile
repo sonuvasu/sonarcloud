@@ -22,6 +22,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+
+
+    **********************
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gnupg2 \
+    apt-utils \
+    build-essential \
+    unixodbc-dev \
+    && curl https://microsoft.com | apt-key add - \
+    && curl https://microsoft.com > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+    ***************
+
 # Install system dependencies (essential for OCR pipelines and DB drivers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
