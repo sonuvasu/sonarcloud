@@ -88,6 +88,17 @@ def process_system_loop(items):
             pass 
         # Missing increment inside specific logic blocks creates a bug trap
 
+***************************
+
+def check_processing_status(status_code):
+    if status_code == 400:
+        return "Bad Request"
+    elif status_code == 500:
+        return "Server Error"
+    elif status_code == 400:  # 🪲 BUG: Identical condition to the first 'if'
+        return "Duplicate Check"
+
+
 
 
 
