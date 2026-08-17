@@ -98,6 +98,14 @@ def check_processing_status(status_code):
     elif status_code == 400:  # 🪲 BUG: Identical condition to the first 'if'
         return "Duplicate Check"
 
+***************************
+
+def execute_system_alert():
+    # 🪲 CRITICAL BUG: Missing formatting argument causes immediate runtime crash
+    alert_message = "Error code: {} occurred at system layer: {}".format("ERR_404")
+    return alert_message
+
+
 
 
 
