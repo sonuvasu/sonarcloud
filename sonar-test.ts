@@ -106,6 +106,33 @@ def execute_system_alert():
     return alert_message
 
 
+**************
+  - name: Generate External Linter Issues
+    shell: powershell
+    run: |
+      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+      $ErrorActionPreference = "Continue"
+
+      # 1. Target the EXACT deep path SonarQube is looking for
+      $targetDir = "C:\actions-runner-win-x64-2.335.1\_work\Agentic-AP-POC\Agentic-AP-POC"
+      $reportPath = Join-Path $targetDir "flake8-report.txt"
+
+      Write-Host "Creating report placeholder at: $reportPath"
+      
+      # 2. Force-create the folder and an empty file so SonarQube ALWAYS finds it
+      if (!(Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force }
+      New-Item -ItemType File -Path $reportPath -Force | Out-Null
+
+      # 3. Install and execute Flake8 directly into that absolute path
+      python -m pip install --upgrade pip
+      python -m pip install flake8
+      python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --output-file="$reportPath"
+
+      # 4. Print verification to your logs
+      Write-Host "Final file confirmation check:"
+      Get-Item $reportPath
+*********
+
 
 
 
