@@ -134,6 +134,109 @@ def execute_system_alert():
 *********
 
 
+  - name: Generate HTML Quality Report
+    shell: powershell
+    env:
+      SONAR_HOST: ${{ secrets.SONAR_HOST_URL }}
+      PROJECT_KEY: "SamplePython"
+      SONAR_TOKEN: ${{ secrets['Sample.Python'] }}  # Securely maps token to prevent syntax escaping errors
+    run: |
+      # 1. Wait buffer to let the SonarQube background processing engine finish saving metrics
+      Write-Host "Waiting 12 seconds for server database sync..."
+      Start-Sleep -Seconds 12
+
+      $SONAR_HOST = $env:SONAR_HOST
+      $PROJECT_KEY = $env:PROJECT_KEY
+      $TOKEN = $env:SONAR_TOKEN
+
+      # 2. Build Authorization headers securely
+      $headers = @{ Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($TOKEN):")) }
+      
+      # 3. Clean Web API Request (Removed branch criteria as it is unsupported in Community Version)
+      $apiUrl = "$($SONAR_HOST)/api/issues/search?componentKeys=$($PROJECT_KEY)&resolved=false&ps=500"
+      Write-Host "Fetching report payload from: $apiUrl"
+      $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
+
+      # 4. Filter issues by type using LOWERCASE matching to align exactly with SonarQube's API JSON response keys
+      $bugsList = $response.issues | Where-Object { $_.type -eq "bug" }
+      $vulnList = $response.issues | Where-Object { $_.type -eq "vulnerability" }
+      $smellList = $response.issues | Where-Object { $_.type -eq "code_smell" }
+
+      # 5. Helper function to generate clean table rows for details
+      function Get-IssueRows($issues) {
+          if ($null -eq $issues -or $issues.Count -eq 0) { 
+              return "<tr><td colspan='3' style='text-align:center; color:#888;'>No issues found 🎉</td></tr>" 
+          }
+          $rows = ""
+          foreach ($i in $issues) {
+              # Strip out project token prefix from path
+              $file = $i.component -replace "^[^:]+:", ""
+              $lineNum = if ($i.line) { $i.line } else { "Global" }
+              $rows += "<tr><td>$file</td><td>Line $lineNum</td><td>$($i.message)</td></tr>"
+          }
+          return $rows
+      }
+
+      # 6. Execute function calls wrapping variables inside proper PowerShell parentheses
+      $bugRows   = Get-IssueRows($bugsList)
+      $vulnRows  = Get-IssueRows($vulnList)
+      $smellRows = Get-IssueRows($smellList)
+
+      $date = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss UTC")
+
+      # 7. Compile the HTML Document Template
+      $htmlContent = @"
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>SonarQube Detailed Report - $PROJECT_KEY</title>
+          <style>
+              body { font-family: 'Calibri', sans-serif; margin: 30px; color: #333; }
+              h1 { color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 5px; }
+              h2 { color: #2c3e50; margin-top: 30px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
+              th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+              th { background-color: #f2f2f2; font-weight: bold; color: #2c3e50; }
+              tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+      </head>
+      <body>
+          <h1>SonarQube Detailed Quality Report</h1>
+          <p><strong>Project Key:</strong> $PROJECT_KEY</p>
+          <p><strong>Generated on:</strong> $date</p>
+
+          <h2>🐛 Bugs Detailed List</h2>
+          <table>
+              <tr><th>File Path</th><th>Location</th><th>Description</th></tr>
+              $bugRows
+          </table>
+
+          <h2>🔵 Vulnerabilities Detailed List</h2>
+          <table>
+              <tr><th>File Path</th><th>Location</th><th>Description</th></tr>
+              $vulnRows
+          </table>
+
+          <h2>📝 Code Smells Detailed List</h2>
+          <table>
+              <tr><th>File Path</th><th>Location</th><th>Description</th></tr>
+              $smellRows
+          </table>
+      </body>
+      </html>
+      "@
+
+      # 8. Force write the file to the absolute root runner folder path with clean UTF-8 formatting
+      $reportPath = Join-Path $pwd "sonar-analysis-report.html"
+      $htmlContent | Out-File -FilePath $reportPath -Encoding utf8 -Force
+
+      Write-Host "========================================="
+      Write-Host "SUCCESS! HTML Report compiled perfectly."
+      Write-Host "File saved to target absolute path: $reportPath"
+      Write-Host "========================================="
+*****************
+
+
 
 
 
